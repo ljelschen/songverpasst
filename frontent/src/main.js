@@ -14,7 +14,7 @@ Vue.prototype.$hostname = "http://127.0.0.1:5000/"
 
 
 Vue.config.productionTip = false
-
+Vue.use(VueAxios, axios)
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
@@ -24,4 +24,3 @@ new Vue({
 })
 
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-Vue.use(VueAxios, axios)

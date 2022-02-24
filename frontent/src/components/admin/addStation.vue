@@ -19,6 +19,8 @@
         <div v-if="response">
             {{response}}
         </div>
+
+        <span>{{url}}</span>
     </form>
 
 

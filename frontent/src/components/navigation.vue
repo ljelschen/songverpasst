@@ -7,6 +7,7 @@
     <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
       <li><router-link :to="{ name: 'home' }" class="nav-link px-2 link-secondary">Home</router-link></li>
       <li><router-link :to="{ name: 'admin' }" class="nav-link px-2 link-secondary">Admin</router-link></li>
+       <li><router-link :to="{ name: 'songs' }" class="nav-link px-2 link-secondary">Songs</router-link></li>
     </ul>
 
     <div class="col-md-3 text-end">
