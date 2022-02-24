@@ -103,30 +103,31 @@ def saveSongsBremenX(station, url):
     else:
         return None
     
+if __name__ == "__main__":
+    ##### Json Abfrage
+    #create a timesamp in the formart of the bremen website
+    timestamp = str(int(round(time.time(), 0))) + '000'
+    hour = datetime.datetime.now().hour
+    minute = datetime.datetime.now().minute
 
-##### Json Abfrage
-#create a timesamp in the formart of the bremen website
-timestamp = str(int(round(time.time(), 0))) + '000'
+    
+    #Bremen 1
+    urlBremen1 = f"https://www.bremeneins.de/startseite-bremen-eins-100~ajax_ajaxType-epg.json?_={timestamp}"
+    saveSongsBremenX("Bremen 1", urlBremen1)
 
-#Bremen 1
-urlBremen1 = f"https://www.bremeneins.de/startseite-bremen-eins-100~ajax_ajaxType-epg.json?_={timestamp}"
-saveSongsBremenX("Bremen 1", urlBremen1)
+    #Bremen 2
+    urlBremen2 = f"https://www.bremenzwei.de/startseite-bremen-zwei-100~ajax_ajaxType-epg.json?_={timestamp}"
+    saveSongsBremenX("Bremen 2", urlBremen2)
 
-#Bremen 2
-urlBremen2 = f"https://www.bremenzwei.de/startseite-bremen-zwei-100~ajax_ajaxType-epg.json?_={timestamp}"
-saveSongsBremenX("Bremen 2", urlBremen2)
+    #Bremen Next
+    urlBremenNext = f"https://www.bremennext.de/bremennext-startseite100~ajax_ajaxType-epg.json?_={timestamp}"
+    saveSongsBremenX("Bremen Next", urlBremenNext)
 
-#Bremen Next
-urlBremenNext = f"https://www.bremennext.de/bremennext-startseite100~ajax_ajaxType-epg.json?_={timestamp}"
-saveSongsBremenX("Bremen Next", urlBremenNext)
+    ##### Speziale Abfrage
 
-##### Speziale Abfrage
-
-#Bremen 4
-hour = datetime.datetime.now().hour
-minute = datetime.datetime.now().minute
-urlBremen4 = f"https://www.bremenvier.de/titelsuche-102~ajax.html?playlistsearch-searchDate={date}&playlistsearch-searchTime={hour}%3A{minute}"
-saveSongsBremen4("Bremen 4", urlBremen4)
+    #Bremen 4
+    urlBremen4 = f"https://www.bremenvier.de/titelsuche-102~ajax.html?playlistsearch-searchDate={date}&playlistsearch-searchTime={hour}%3A{minute}"
+    saveSongsBremen4("Bremen 4", urlBremen4)
 
 
 
