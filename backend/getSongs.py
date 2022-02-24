@@ -110,7 +110,6 @@ if __name__ == "__main__":
     hour = datetime.datetime.now().hour
     minute = datetime.datetime.now().minute
 
-    
     #Bremen 1
     urlBremen1 = f"https://www.bremeneins.de/startseite-bremen-eins-100~ajax_ajaxType-epg.json?_={timestamp}"
     saveSongsBremenX("Bremen 1", urlBremen1)
@@ -123,11 +122,13 @@ if __name__ == "__main__":
     urlBremenNext = f"https://www.bremennext.de/bremennext-startseite100~ajax_ajaxType-epg.json?_={timestamp}"
     saveSongsBremenX("Bremen Next", urlBremenNext)
 
-    ##### Speziale Abfrage
-
     #Bremen 4
-    urlBremen4 = f"https://www.bremenvier.de/titelsuche-102~ajax.html?playlistsearch-searchDate={date}&playlistsearch-searchTime={hour}%3A{minute}"
-    saveSongsBremen4("Bremen 4", urlBremen4)
+    urlBremen4 = f"https://www.bremenvier.de/bremenvier-startseite100~ajax_ajaxType-epg.json?_={timestamp}"
+    saveSongsBremenX("Bremen 4", urlBremenNext)
+
+    ##### Speziale Abfrage
+    #urlBremen4 = f"https://www.bremenvier.de/titelsuche-102~ajax.html?playlistsearch-searchDate={date}&playlistsearch-searchTime={hour}%3A{minute}"
+    #saveSongsBremen4("Bremen 4", urlBremen4)
 
 
 
