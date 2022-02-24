@@ -27,11 +27,13 @@
 <script>
 export default {
     name: 'addStation',
-    data:{
-        name: "",
-        type: "",
-        url: "",
-        response: "",
+    data (){
+        return {
+            name: "",
+            type: "",
+            url: "",
+            response: "",
+        }
   },
   methods: {
     getInfo() {
