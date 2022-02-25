@@ -53,6 +53,10 @@ def getSongsByStation():
         cursor.execute(q)
         #return the songs as json
         returnValues = []
+        '''
+        IMPROVE: better Fetching.... 
+        '''
+
         for song in cursor.fetchall():
             returnValues.append({
                 "id": song[0],

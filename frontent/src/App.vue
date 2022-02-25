@@ -2,14 +2,7 @@
   <div id="app">
     <!-- include the Navigation -->
     <navigation></navigation>
- 
-
-    <div class="container">
-      <!-- include the Content -->
-      <router-view/>
-    </div>
-
-    <!-- include the Footer -->
+    <router-view/>
     <footnav></footnav>
 
   </div>
