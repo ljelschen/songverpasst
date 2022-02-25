@@ -52,7 +52,17 @@ def getSongsByStation():
         q = str(q).replace('"', '`')
         cursor.execute(q)
         #return the songs as json
-        return jsonify(cursor.fetchall())
+        returnValues = []
+        for song in cursor.fetchall():
+            returnValues.append({
+                "id": song[0],
+                "date": song[1],
+                "time": song[2],
+                "station": song[3],
+                "artist": song[4],
+                "title": song[5],
+            })
+        return jsonify(returnValues)
     else:
         return "<p>No station defined!</p>"
  

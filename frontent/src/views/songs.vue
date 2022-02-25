@@ -9,25 +9,27 @@
         <th scope="col">Song</th>
       </tr>
     </thead>
-    <tbody>
-
+    <tbody v-if="items !=''">
+      <tr v-for="item in items" :key="item.id">
+          <th scope="row">{{item.id}}</th>
+          <td>{{item.date}}</td>
+          <td>{{item.time}}</td>
+          <td>{{item.artist}}</td>
+          <td>{{item.title}}</td>
+      </tr>
     </tbody>
-      <songsTable v-for="(song, index) in songs" :tid="index" :date="songs[index]['1']" :time="songs[index]['1']" :artist="songs[index]['1']" :song="songs[index]['1']"></songsTable>    
     </table>
 </template>
 <script>
 
-import songsTable from '@/components/songs/songsTable.vue'
 
 export default {
   name: 'songs',
-  components: {
-    songsTable
-  },
+
 
   data () {
     return {
-      songs: ''
+      items: ''
     }
   },
 
@@ -35,8 +37,8 @@ export default {
       this.axios
         .get(this.$hostname + 'getSongsByStation?station=Bremen Next')
         .then(response => {
-        this.songs = response
-        console.log(this.songs)
+        this.items = response.data
+        console.log(this.items)
         })
 
     
