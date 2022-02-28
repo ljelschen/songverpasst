@@ -7,5 +7,3 @@
 *.ntvs*
 *.njsproj
 *.sln
-__pycache__
-.cache 
