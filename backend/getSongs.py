@@ -6,7 +6,23 @@ import datetime
 import time
 #include the MySQL settings
 from pypika import Query, Table, Field
-from mysqlsetup import connectToMySQL
+from connect import connectToMySQL, connectToSpotify
+
+sp = connectToSpotify()
+
+
+def getSongInfo(artist, title):
+    #search qurry
+    q = f"{artist} {title}"
+    #request the search
+    results = sp.search(q= q, limit=1)
+    if results['tracks']['total'] > 0:
+        track = results['tracks']['items'][0]
+        ## return the img, album, url
+        return track['album']['images'][0]['url'], track['album']['name'], track['uri']
+
+
+
 mydb, cursor = connectToMySQL()
 
 #set the date to today
@@ -91,11 +107,26 @@ def saveSongsBremenX(station, url):
         #loop through the songs
         for song in songs:
             if not checkDuplicateSong({'date': date, 'time': song['time'], 'interpret': song['artist'], 'title': song['song']}):
+            
+                #replace " mit" durch "," um ein besseren erfolg bei der Spotify Suche zu erzielen
+                if "mit " in song['artist']:
+                    song['artist'] = song['artist'].replace(" mit", ",")
+     
+                #get Song info
+                info = getSongInfo(song['artist'], song['song'])
+                if info != None:
+                    img, album, spotifyUrl = info
                  #save the song to the database
-                q = Query.into(tbSongs).columns('date', 'time', 'station', 'interpret', 'title').insert(date, song['time'], station, song['artist'], song['song'])
-                q = str(q).replace('"', '`')
-                cursor.execute(q)
-                mydb.commit()
+                    q = Query.into(tbSongs).columns('date', 'time', 'station', 'interpret', 'title', 'img', 'album', 'spotify').insert(date, song['time'], station, song['artist'], song['song'], img, album, spotifyUrl )
+                    q = str(q).replace('"', '`')
+                    cursor.execute(q)
+                    mydb.commit()
+                else:
+                    q = Query.into(tbSongs).columns('date', 'time', 'station', 'interpret', 'title', 'img', 'album', 'spotify').insert(date, song['time'], station, song['artist'], song['song'], "", "", "")
+                    q = str(q).replace('"', '`')
+                    cursor.execute(q)
+                    mydb.commit()
+      
             #add the song to the return value
             songsRetrun.append({'date': date, 'time': song['time'], 'interpret': song['artist'], 'title': song['song']})
         #return all songs
@@ -107,8 +138,6 @@ if __name__ == "__main__":
     ##### Json Abfrage
     #create a timesamp in the formart of the bremen website
     timestamp = str(int(round(time.time(), 0))) + '000'
-    hour = datetime.datetime.now().hour
-    minute = datetime.datetime.now().minute
 
     #Bremen 1
     urlBremen1 = f"https://www.bremeneins.de/startseite-bremen-eins-100~ajax_ajaxType-epg.json?_={timestamp}"
@@ -125,10 +154,6 @@ if __name__ == "__main__":
     #Bremen 4
     urlBremen4 = f"https://www.bremenvier.de/bremenvier-startseite100~ajax_ajaxType-epg.json?_={timestamp}"
     saveSongsBremenX("Bremen 4", urlBremenNext)
-
-    ##### Speziale Abfrage
-    #urlBremen4 = f"https://www.bremenvier.de/titelsuche-102~ajax.html?playlistsearch-searchDate={date}&playlistsearch-searchTime={hour}%3A{minute}"
-    #saveSongsBremen4("Bremen 4", urlBremen4)
 
 
 

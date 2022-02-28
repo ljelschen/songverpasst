@@ -6,7 +6,7 @@ import json
 
 #MySQL
 from pypika import Query, Table, Field
-from mysqlsetup import connectToMySQL
+from connect import connectToMySQL, connectToSpotify
 mydb, cursor = connectToMySQL()
 
 #select the stations table from the database
@@ -65,6 +65,9 @@ def getSongsByStation():
                 "station": song[3],
                 "artist": song[4],
                 "title": song[5],
+                "img": song[6],
+                "album": song[7],
+                "spotify": song[8],
             })
         return jsonify(returnValues)
     else:

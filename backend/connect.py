@@ -2,6 +2,10 @@
 from mysql import connector
 #Enviroment Variables
 from dotenv import dotenv_values
+#import spotify data
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
 config = dotenv_values(".env")
 
 def connectToMySQL():
@@ -15,3 +19,12 @@ def connectToMySQL():
 
   cursor = mydb.cursor()
   return mydb, cursor
+
+
+def connectToSpotify():
+  #connect to the database
+  sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
+    client_id=config['SPOTIFY_CLIENT_ID'],
+    client_secret=config['SPOTIFY_CLIENT_SECRET']
+  ))
+  return sp
