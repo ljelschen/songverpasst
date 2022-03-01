@@ -28,8 +28,9 @@ mydb, cursor = connectToMySQL()
 #set the date to today
 date = datetime.date.today()
 
-#select the songs tabe from the database
+#select the Tables tabe from the database
 tbSongs = Table('songs')
+tnPlayedAt = Table('playedAt')
 
 # read all songs from the database
 def getAllSongs():
@@ -39,7 +40,8 @@ def getAllSongs():
     q = Query.from_(tbSongs).select('*').orderby(tbSongs.time)
     q = str(q).replace('"', '`')
     cursor.execute(q)
-    return cursor.fetchall()
+    fetch = cursor.fetchall()
+    return fetch
 
 #check for duplicates songs in the database
 def checkDuplicateSong(song):
@@ -47,11 +49,15 @@ def checkDuplicateSong(song):
     PERFORMANCE: This function can be slow. Maybe we can improve it.
     """
     #check for duplicates songs in the database
+    
+    mydb, cursor = connectToMySQL()
     q = Query.from_(tbSongs).select('*').where(tbSongs.date == date).where(tbSongs.date == song['date']).where(tbSongs.time == song['time']).where(tbSongs.interpret == song['interpret']).where(tbSongs.title == song['title'])
     q = str(q).replace('"', '`')
     cursor.execute(q)
     result = cursor.fetchall()
+    cursor.close()
     if len(result) > 0:
+
         #return true if song is already in database
         return True
     else:
@@ -92,6 +98,50 @@ def saveSongsBremen4(station, url, debug=False):
     else:
         return None
 
+
+def saveSongToDB(song):
+    q = Query.from_(tbSongs).select('*').where(tbSongs.title == song['song']).where(tbSongs.interpret == song['artist'])
+    q = str(q).replace('"', '`')
+
+    cursor.execute(q)
+    result = cursor.fetchall()
+    if len(result) > 0:
+        return result[0][0]
+    else:
+        #get Song info
+        info = getSongInfo(song['artist'], song['song'])
+        if info != None:
+            img, album, spotifyUrl = info
+            #save the song to the database
+            q = Query.into(tbSongs).columns('interpret', 'title', 'img', 'album', 'spotify').insert(song['artist'], song['song'], img, album, spotifyUrl)
+            q = str(q).replace('"', '`')
+            item = cursor.execute(q)
+            mydb.commit()
+        else:
+           #save the song to the database
+            q = Query.into(tbSongs).columns('interpret', 'title').insert(song['artist'], song['song'])
+            q = str(q).replace('"', '`')
+            item = cursor.execute(q)
+            mydb.commit()
+  
+
+
+
+def addPlayedAt(songId, date, time, station):
+    q = Query.from_(tnPlayedAt).select('*').where(tnPlayedAt.date == date).where(tnPlayedAt.time == time).where(tnPlayedAt.station == station)
+    q = str(q).replace('"', '`')
+    cursor.execute(q)
+    result = cursor.fetchall()
+    if len(result) > 0:
+        return False
+    else:
+        q = Query.into(tnPlayedAt).columns('songID','date', 'time', 'station').insert(songId, date, time, station)
+        q = str(q).replace('"', '`')
+        cursor.execute(q)
+        mydb.commit()
+        return True
+
+
 #reads the songs from the website via json and saves them to the database
 def saveSongsBremenX(station, url):
     #This does Work for Bremen 1, Bremen 2, Bremen 4, Bremen Next
@@ -102,39 +152,29 @@ def saveSongsBremenX(station, url):
         json_data = json.loads(result.text)
         #get the songs from the json object
         songs = json_data['playlistPrevious']
-        #variable for the return value
-        songsRetrun = []
-        #loop through the songs
         for song in songs:
-            if not checkDuplicateSong({'date': date, 'time': song['time'], 'interpret': song['artist'], 'title': song['song']}):
-            
-                #replace " mit" durch "," um ein besseren erfolg bei der Spotify Suche zu erzielen
-                if "mit " in song['artist']:
-                    song['artist'] = song['artist'].replace(" mit", ",")
-     
-                #get Song info
-                info = getSongInfo(song['artist'], song['song'])
-                if info != None:
-                    img, album, spotifyUrl = info
-                 #save the song to the database
-                    q = Query.into(tbSongs).columns('date', 'time', 'station', 'interpret', 'title', 'img', 'album', 'spotify').insert(date, song['time'], station, song['artist'], song['song'], img, album, spotifyUrl )
-                    q = str(q).replace('"', '`')
-                    cursor.execute(q)
-                    mydb.commit()
-                else:
-                    q = Query.into(tbSongs).columns('date', 'time', 'station', 'interpret', 'title', 'img', 'album', 'spotify').insert(date, song['time'], station, song['artist'], song['song'], "", "", "")
-                    q = str(q).replace('"', '`')
-                    cursor.execute(q)
-                    mydb.commit()
-      
-            #add the song to the return value
-            songsRetrun.append({'date': date, 'time': song['time'], 'interpret': song['artist'], 'title': song['song']})
-        #return all songs
-        return songsRetrun
+            #replace " mit" durch "," um ein besseren erfolg bei der Spotify Suche zu erzielen
+            if "mit " in song['artist']:
+                song['artist'] = song['artist'].replace(" mit", ",")
+
+            songId = saveSongToDB(song)
+            if songId == None:
+                q = Query.from_(tbSongs).select('*').where(tbSongs.title == song['song']).where(tbSongs.interpret == song['artist'])
+                q = str(q).replace('"', '`')
+                cursor.execute(q)
+                result = cursor.fetchall()
+                songId = result[0][0]
+
+            addPlayedAt(songId, date, song['time'], station)
+        
+            #addPlayedAt(date, time, station)
+            break
+        return True
     else:
         return None
     
 if __name__ == "__main__":
+   
     ##### Json Abfrage
     #create a timesamp in the formart of the bremen website
     timestamp = str(int(round(time.time(), 0))) + '000'
@@ -153,7 +193,7 @@ if __name__ == "__main__":
 
     #Bremen 4
     urlBremen4 = f"https://www.bremenvier.de/bremenvier-startseite100~ajax_ajaxType-epg.json?_={timestamp}"
-    saveSongsBremenX("Bremen 4", urlBremenNext)
-
+    saveSongsBremenX("Bremen 4", urlBremen4)
+   
 
 
